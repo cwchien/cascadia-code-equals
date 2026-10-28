@@ -8,6 +8,7 @@ from pathlib import Path
 import fontTools.designspaceLib
 import ufo2ft
 import ufoLib2
+from glyphsLib import glyphdata
 from ufo2ft.instantiator import Instantiator
 
 VERSION_YEAR_MONTH = 2407
@@ -107,6 +108,26 @@ def prepare_fonts(
         set_font_metaData(source.font)
 
 
+def preliminary_opentype_categories(font: ufoLib2.Font) -> dict[str, str]:
+    # The sources lack public.openTypeCategories, so ufo2ft would guess marks
+    # from "_" anchors and misclassify glyphs such as the spacing accents and
+    # Aringacute. Classify marks and ligatures from Glyphs' glyph data instead;
+    # ufo2ft infers the base glyphs after anchor propagation.
+    categories = {}
+    for glyph in font:
+        info = glyphdata.get_glyph(
+            glyph.name, unicodes=[f"{u:04X}" for u in glyph.unicodes]
+        )
+        if info.subCategory == "Ligature":
+            categories[glyph.name] = "ligature"
+        elif info.category == "Mark" and info.subCategory in (
+            "Nonspacing",
+            "Spacing Combining",
+        ):
+            categories[glyph.name] = "mark"
+    return categories
+
+
 # Build fonts
 # ****************************************************************
 
@@ -139,7 +160,10 @@ def compile_static_and_save(instance: ufoLib2.Font, name: str) -> None:
     # writing, massively faster than booleanOperations and thanks to autohinting,
     # there is no need to keep outlines compatible to previous releases.
     static_ttf = ufo2ft.compileTTF(
-        instance, removeOverlaps=True, overlapsBackend="pathops"
+        instance,
+        removeOverlaps=True,
+        overlapsBackend="pathops",
+        preliminaryOpenTypeCategories=preliminary_opentype_categories(instance),
     )
 
     file_name = f"{family_name}-{style_name}".replace(" ", "")
