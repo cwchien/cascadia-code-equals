@@ -12,15 +12,20 @@ This fork of Cascadia Code:
 
 ## Build Requirements
 
-- Python 3.12 (as far as I know)
+- Python 3.14
+- [uv](https://docs.astral.sh/uv/)
 
 ### How to build
 
-Setup a `venv`, install requirements, and run the build script.
+Create a virtual environment, install requirements, and run the build script.
 
 ```sh
-python3.12 -m venv venv
-source venv/bin/activate
-pip install -U pip setuptools wheel
-pip install -r requirements.txt
+uv venv --python 3.14
+uv pip install -r requirements.txt
+uv run build.py
 ```
+
+The build only produces the static TTFs of Cascadia Code Regular, Bold, Italic and Bold Italic:
+
+- `build/ttf/unhinted/`: without hinting
+- `build/ttf/hinted/`: hinted with ttfautohint

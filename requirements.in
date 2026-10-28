@@ -1,11 +1,9 @@
-# Add or remove dependencies here and then use pip-tool's 
-#   pip-compile -U requirements.in
+# Add or remove dependencies here and then run
+#   uv pip compile -U --python-version 3.14 requirements.in -o requirements.txt
 # to update requirements.txt (the lock file, so to speak).
 
-fontmake
-psautohint
-gftools
-vttLib
+fontTools[ufo,lxml]
+ufo2ft
+ufoLib2
 skia-pathops
-fontTools[ufo,lxml,woff]
-vttmisc
+ttfautohint-py
